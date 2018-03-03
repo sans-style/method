@@ -1,0 +1,47 @@
+1 is biggest to 3 is smallest heading.
+
+::: H1
+:: h2
+: h3
+
+In any text you can do stuff like my.thoughts.on/the.army will link to that page or the.army will link to that page, we need a list of stop words to avoid like this and or a. Dates like 2018/02/12 will link to your journal entry on the 12th of February 2018.
+
+Italics is done _with underscores_ and bold is done *with asterisks* just one is needed. One line break is 
+taken as a br and two line breaks or more is treated as the boundary of a paragraph.
+
+Link to ://google.com we method will figure out if its https or http preferably s. To embed an image or youtube video you simple put a link to it in its own paragraph like:
+
+://youtube.com/watch?v=hsojt7iEcTQ
+
+[] will be auto expanded to a check box like [ ] and any text beside it will be a label for the check box up until a. You can then click on the text or label to check [*] and uncheck [ ] the check box, this should probably auto save?
+
+@ 2018/06/18 Get a hair cut.
+^ This is how you set a reminder at @ 12th of June to "Get a hair cut."
+
+@12m pizza
+^ Pizzas ready in twelve mintues! You'll get a bell!
+
+@15' P!ZZA!
+@900" PIZZAA
+@15 minutes {PIZZA}
+@ 15 mins PiZzA!
+@ 900s Piiza
+@ fifteen minutes Pizza is burnt.
+^ Pizzas burnt in fifteen minutes! You'll get lots of bells!
+
+@ 08:00 Get up.
+^ Its eight in the morning time to get up :( You'll get a bell :(
+
+@ wednesday 18:00 Take out bins.
+^ Set a recuring alarm and never forget.
+
+--- This creates a horizontal rule ---
+
+{ append my.thoughts.on/method }
+
+I can dump from my journal into my notes.
+
+{ end append }
+
+
+

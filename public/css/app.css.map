@@ -1,0 +1,1 @@
+{"version":3,"sources":["webpack:///./assets/scss/assets/scss/app.scss"],"names":[],"mappings":"AAAA,KACC,gBACA,aAAc,CAGf,KACC,cAAe","file":"./public/css/app.css","sourcesContent":["html {\r\n\tbackground: #e55;\r\n\tcolor: #fafafa;\r\n}\r\n\r\nbody {\r\n\tfont-size: 2rem;\r\n}\r\n\n\n\n// WEBPACK FOOTER //\n// ./assets/scss/assets/scss/app.scss"],"sourceRoot":""}
