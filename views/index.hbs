@@ -1,2 +1,129 @@
 <h1>{{title}}</h1>
 <p>Welcome to {{title}}</p>
+
+<div id ="pagesList">
+<ul>
+	<li class = "pageListItem noSelect" name = "root" id = "root" data-pageId = "0">Root</li>
+{{#each pages}}
+	<li class = "pageListItem noSelect" name = "pageLabel{{this.id}}" id = "pageLabel{{this.id}}" data-pageId = "{{this.id}}">{{{this.label}}}</li>
+{{/each}}
+</ul>
+</div>
+
+<p id="pageSelectionMessage">default message</p>
+
+<form id= "newPageForm" action="/" method = "post">
+<input class = "hidden selectedPageInfo" name = "newPageSelectedPageId" value = "{{selectedPage}}">
+<input name = "newPageName" type="text" value="enter new page name">
+<input type="submit" value = "Create new Page">
+</form>
+
+<form id = "textAreaForm" action="/" method = "post" data-selectedPageId = "0">
+<input class = "hidden selectedPageInfo" name = "textAreaSelectedPageId" value = "{{selectedPage}}">
+	<input type = "submit" value = "Save">
+	<textarea name = "inputField" id = "inputField" rows = "20" cols = "100">{{placeHoldText}}</textarea>
+</form>
+
+<form id = "versionSelectionForm" action = "/" method = "post" data-selectedPageId = "0">
+<input class = "hidden selectedPageInfo" name = "versionSelectionSelectedPageId" value = "{{selectedPage}}">
+
+<select name="versionSelection" id = "versionSelection">
+
+	{{#each versionTimes}}
+	<option value = "{{this.number}}">{{this.date}}</option>
+	{{/each}}
+	
+</select>
+<input type = "submit" value = "load selected version">
+</form>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+
+
+<script>
+
+var pagesTitlesArray = [];
+var pagesPathArray = [];
+var pagesDataArray = [];
+var versionsArray = [];
+var pageVersions = [];
+var journalText = "";
+var re = /\r\n/g;
+journalText = journalText.replace(re, "<br>");
+
+{{#each pages}}
+	pagesTitlesArray.push("{{this.name}}");
+	pagesPathArray.push("{{this.path}}");
+	journalText = "{{this.data}}";
+	journalText = journalText.replace(re, "<br>");
+	pagesDataArray.push(journalText);
+	pageVersions = [];
+	{{#each this.versions}}
+		pageVersions.push("{{this.date}}");
+	{{/each}}
+	versionsArray.push(pageVersions);
+{{/each}}
+
+console.log(versionsArray);
+
+$("document").ready(function(){
+
+	
+	//set default values based on selected page
+	$("#pageSelectionMessage").html("Current Page : " + "{{selectedPagePath}}" + "<br>Current Note : {{placeHoldText}}");
+	
+	
+	$("#root").click(function(){
+		$("#newPageForm").attr("data-selectedPageId", "0");
+		$("#textAreaForm").attr("data-selectedPageId", "0");
+		$("#versionSelectionForm").attr("data-selectedPageId", "0");
+		
+		$("#pageSelectionMessage").html("Current Page : Root<br>CurrentNote : " + "root note");
+		
+		$(".selectedPageInfo").each(function(){
+			$(this).attr("value", "0");
+		});
+	});
+	
+
+	
+	{{#each pages}}
+	
+	$("#pageLabel{{this.id}}").click(function(){
+		$("#newPageForm").attr("data-selectedPageId", "{{this.id}}");
+		$("#textAreaForm").attr("data-selectedPageId", "{{this.id}}");
+		$("#versionSelectionForm").attr("data-selectedPageId", "{{this.id}}");
+		
+		$("#pageSelectionMessage").html("Current Page : " + "{{this.path}}<br> CurrentNote : " + "{{this.data}}");
+		$("#inputField").html("{{{this.data}}}");
+		
+		$(".selectedPageInfo").each(function(){
+			$(this).attr("value", "{{this.id}}");
+		});
+		
+		let htmlString = "";
+		let i = 0;
+		let j = 0;
+		//console.log("{{@index}}");
+		i = {{@index}};
+		console.log("i = " + i);
+		
+		{{#each this.versions}}
+			//console.log("{{@index}} {{this.versions}}");
+			j = {{@index}} {{this.versions}};
+			console.log("j = " + j);
+			//console.log("i = " + i);
+			htmlString += '<option value = "' + j + '">' + versionsArray[i][j] + '</option>';
+		{{/each}}
+
+		$("#versionSelection").html(htmlString);
+	});
+	
+
+	
+	{{/each}}
+});
+
+
+</script>

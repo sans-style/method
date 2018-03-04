@@ -20,13 +20,13 @@ app.csrf = csurf({ cookie: true })
 app.multer = multer({ dest: app.base + 'store/uploads/' })
 
 app.db = require('sqlite-cipher')
-app.db.connect(app.base + 'store/database/sqlite.db', 'bd8Y4eGes4A63jka', 'aes-256-ctr')
+//app.db.connect(app.base + 'store/database/sqlite.db', 'bd8Y4eGes4A63jka', 'aes-256-ctr')
 
 // view engine setup
 app.set('views', app.base + 'views')
 app.set('view engine', 'hbs')
 hbs.registerPartials(app.base + 'views/partials')
-app.set('view options', {layout: app.base + 'layouts/main.hbs'})
+app.set('view options', {layout: 'layouts/main.hbs'})
 
 hbs.registerHelper({
     eq: function (v1, v2) {
@@ -83,25 +83,49 @@ function shouldCompress (req, res) {
 	return compression.filter(req, res)
 }
 
+// Key passing & database middleware
+app.use(function (req, res, next) {
+	req.body.dbkey = 'bd8Y4eGes4A63jka'
+
+    // If we got a db key passed we unlock the database so we can use it.
+	if (req.body.dbkey !== undefined) {
+        res.locals.dbkey = req.body.dbkey
+		req.db = app.db
+		req.db.connect(app.base + 'store/database/sqlite.db', res.locals.dbkey, 'aes-256-ctr')
+
+        // Lock it when we are done
+		req.on('finish', function() {
+			req.db.close()
+		})
+	} else {
+        // No db key? we will ask the user for one.
+		if (req.path.toLowerCase() != '/login') {
+			res.redirect('/login')
+		}
+	}
+
+    next()
+})
+
 // Load in routes
 app.use('/', require(app.base + 'routes'))
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
-	var err = new Error('Not Found');
-	err.status = 404;
-	next(err);
-});
+	let err = new Error('Not Found')
+	err.status = 404
+	next(err)
+})
 
 // error handler
 app.use(function(err, req, res, next) {
 	// set locals, only providing error in development
-	res.locals.message = err.message;
-	res.locals.error = req.app.get('env') === 'development' ? err : {};
+	res.locals.message = err.message
+	res.locals.error = req.app.get('env') === 'development' ? err : {}
 
 	// render the error page
-	res.status(err.status || 500);
-	res.render('error');
-});
+	res.status(err.status || 500)
+	res.render('error')
+})
 
 app.listen(43214);
