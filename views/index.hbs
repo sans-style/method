@@ -21,7 +21,7 @@
 <form id = "textAreaForm" action="/" method = "post" data-selectedPageId = "0">
 <input class = "hidden selectedPageInfo" name = "textAreaSelectedPageId" value = "{{selectedPage}}">
 	<input type = "submit" value = "Save">
-	<textarea name = "inputField" id = "inputField" rows = "20" cols = "100">{{placeHoldText}}</textarea>
+	<textarea style = "white-space: pre-wrap" name = "inputField" id = "inputField" rows = "20" cols = "100">{{placeHoldText}}</textarea>
 </form>
 
 <form id = "versionSelectionForm" action = "/" method = "post" data-selectedPageId = "0">
@@ -43,6 +43,8 @@
 
 <script>
 
+
+var defaultDisplayedText = "{{placeHoldText}}";
 var pagesTitlesArray = [];
 var pagesPathArray = [];
 var pagesDataArray = [];
@@ -51,6 +53,8 @@ var pageVersions = [];
 var journalText = "";
 var re = /\r\n/g;
 journalText = journalText.replace(re, "<br>");
+defaultDisplayedText = defaultDisplayedText.replace(re, "<br>");
+
 
 {{#each pages}}
 	pagesTitlesArray.push("{{this.name}}");
@@ -70,9 +74,11 @@ console.log(versionsArray);
 $("document").ready(function(){
 
 	
+	
 	//set default values based on selected page
 	$("#pageSelectionMessage").html("Current Page : " + "{{selectedPagePath}}" + "<br>Current Note : {{placeHoldText}}");
 	
+	$("#inputField").html(defaultDisplayedText);
 	
 	$("#root").click(function(){
 		$("#newPageForm").attr("data-selectedPageId", "0");
@@ -96,7 +102,7 @@ $("document").ready(function(){
 		$("#versionSelectionForm").attr("data-selectedPageId", "{{this.id}}");
 		
 		$("#pageSelectionMessage").html("Current Page : " + "{{this.path}}<br> CurrentNote : " + "{{this.data}}");
-		$("#inputField").html("{{{this.data}}}");
+		$("#inputField").html("{{this.data}}");
 		
 		$(".selectedPageInfo").each(function(){
 			$(this).attr("value", "{{this.id}}");

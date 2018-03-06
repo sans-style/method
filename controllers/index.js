@@ -20,9 +20,13 @@ controller.all('/', function(req, res, next) {
 		
 		selectedPage = req.body.textAreaSelectedPageId;
 		console.log("selected page: " + selectedPage);
-
-		var re = /\r\n/g;
+		console.log(journalText);
+		var re = /\\/g;
+		journalText = journalText.replace(re, "\\\\");
+		re = /(?:\r\n|\r|\n)/g;
 		journalText = journalText.replace(re, "\\n");
+		console.log("journalText = " + journalText);
+		
 		
 		let block = {
 		pageId : selectedPage,
@@ -51,7 +55,7 @@ controller.all('/', function(req, res, next) {
 			pathString = "/" + newPageName;
 		}
 		else {
-		pathString = req.db.run(`SELECT * FROM pages WHERE id = ${selectedPage}`)[0].path + "/" + newPageName;
+		pathString = req.db.run('SELECT * FROM pages WHERE id = ?', [selectedPage])[0].path + "/" + newPageName;
 		console.log("pathstring = " + pathString);
 		
 		}
@@ -186,10 +190,10 @@ controller.all('/', function(req, res, next) {
 		orderedPages[i]["label"] = label;
 		
 		currentPage = orderedPages[i].id;
-		selectedRows = req.db.run(`SELECT * FROM blocks WHERE pageId = ${currentPage} ORDER BY created DESC`);
+		selectedRows = req.db.run('SELECT * FROM blocks WHERE pageId = ' + currentPage + ' ORDER BY created DESC');
 		
 		console.log("\nindex  = " +i+" pageId = "+currentPage+"no of versions = " +selectedRows.length+ "\n");
-		
+		console.log('SELECT * FROM blocks WHERE pageId = ? ORDER BY created DESC', [currentPage])
 		orderedPages[i]["data"] = selectedRows[0].data;
 		
 		
@@ -197,7 +201,8 @@ controller.all('/', function(req, res, next) {
 		versions = [];
 		
 		for (j = 0;j<selectedRows.length;j++) {
-			let date = new Date(rows[j].created*1000);
+			console.log(j, selectedRows[j]);
+			let date = new Date(selectedRows[j].created*1000);
 			// let the date be in format: "(d)d/(m)m/yyyy || hh:mm:ss
 			let dateString  = date.getDate() + "/" + (date.getMonth() + 1).toString() + "/" + date.getFullYear() + " || " + date.getHours() + ":" + date.getMinutes() + ":" + date.getSeconds();
 			dates.push(dateString);
