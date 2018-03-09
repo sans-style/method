@@ -10,8 +10,11 @@ controller.all('/', function(req, res, next) {
 	//*****var currentPageId = req.body.
 	//need version number to be 0 by default, 0 = latest entry with next most recent = 1 and so on
 	var versionNo = 0;
+	var defaultDisplayedVersions = [];
 	var selectedPage;
 	var i = 0;
+	var errorMessage = "";
+	var errorState = false;
 	
 	var rows = req.db.run("SELECT * FROM blocks ORDER BY created DESC");
 	
@@ -27,15 +30,24 @@ controller.all('/', function(req, res, next) {
 		journalText = journalText.replace(re, "\\n");
 		console.log("journalText = " + journalText);
 		
+		rows = req.db.run("SELECT * FROM blocks WHERE pageId = " + selectedPage + " ORDER BY created DESC LIMIT 1");
 		
-		let block = {
-		pageId : selectedPage,
-		created: Math.round(Date.now() / 1000),
-		data: journalText,
+		if(rows[0].data === journalText) {
+			errorState = true;
+			errorMessage = "no changes detected from previous version";
+			console.log("ERROR: journal entry identical to latest version");
 		}
 		
-		req.db.insert("blocks", block);
-		console.log("ADDING NEW MESSAGE TO DATABASE")
+		if(!errorState) {
+			let block = {
+			pageId : selectedPage,
+			created: Math.round(Date.now() / 1000),
+			data: journalText,
+			}
+			
+			req.db.insert("blocks", block);
+			console.log("ADDING NEW MESSAGE TO DATABASE");
+		}
 	}
 	//if the version option was submitted change versionNo so that the correct version will be rendered
 	else if(versionOption !== undefined) {
@@ -43,7 +55,7 @@ controller.all('/', function(req, res, next) {
 		console.log("selected page: " + selectedPage);
 		console.log("acquiring different version");
 		versionNo = versionOption;
-		journalText = req.db.run(`SELECT * FROM blocks WHERE pageId = ${selectedPage} ORDER BY created DESC`)[versionOption].data;
+		journalText = req.db.run("SELECT * FROM blocks WHERE pageId = " + selectedPage + " ORDER BY created DESC")[versionOption].data;
 	}
 	//if newPageName was submitted create a new page
 	else if(newPageName !== undefined) {
@@ -60,28 +72,38 @@ controller.all('/', function(req, res, next) {
 		
 		}
 		
-		//var re= /\s+/g;
-		//newPageName = newPageName.replace(re, "_");
+		let database = req.db.run("SELECT * FROM pages");
 		
-		let page = {
-		parent : selectedPage,
-		created: Math.round(Date.now() / 1000),
-		name: newPageName,
-		path: pathString
+		for (i=0 ; i<database.length ; i++) {
+			if(database[i].path === pathString)
+			{
+				errorState = true;
+				errorMessage = "page already exists at given directory";
+				console.log("ERROR: PAGE ALREADY EXISTS AT GIVEN DIRECTORY")
+			}
 		}
 		
-		selectedPage = req.db.insert("pages", page);
-		
-		let block = {
-		created: Math.round(Date.now() / 1000),
-		//note: when pages.length is 0 or 1 there should be something to catch that if length = 1 then use query.id instead of query[0].id not sure this is true anymore...
-		pageId : selectedPage,
-		data: "New message!"
+		if (!errorState) {
+			let page = {
+			parent : selectedPage,
+			created: Math.round(Date.now() / 1000),
+			name: newPageName,
+			path: pathString
+			}
+			
+			selectedPage = req.db.insert("pages", page);
+			
+			let block = {
+			created: Math.round(Date.now() / 1000),
+			//note: when pages.length is 0 or 1 there should be something to catch that if length = 1 then use query.id instead of query[0].id not sure this is true anymore...
+			pageId : selectedPage,
+			data: "New message!"
 		}
 		
 		console.log("new page inserted: id: " + selectedPage + "\ncreated = " + block.created);
 		
 		req.db.insert("blocks", block);
+		}
 	}
 	//If all are undefined then no special action is required
 	else {
@@ -227,6 +249,9 @@ controller.all('/', function(req, res, next) {
 		if(currentPage==selectedPage){
 			defaultPath = orderedPages[i].path
 			selectedPageIndex = i;
+			for(let k = 0 ; k<orderedPages[i].versions.length ; k++) {
+				defaultDisplayedVersions.push(orderedPages[i].versions[k]);
+			}
 		}
 	}
 
@@ -237,11 +262,12 @@ controller.all('/', function(req, res, next) {
 	res.render('index', {
 		title: 'Sky Journal',
 		placeHoldText: journalText,
-		versionTimes: versions,
+		versionTimes: defaultDisplayedVersions,
 		pages: orderedPages,
 		selectedPage: selectedPage,
 		selectedPagePath: defaultPath,
-		selectedPageIndex: selectedPageIndex
+		selectedPageIndex: selectedPageIndex,
+		error: errorMessage
 	});
 	
 

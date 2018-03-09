@@ -14,7 +14,7 @@
 
 <form id= "newPageForm" action="/" method = "post">
 <input class = "hidden selectedPageInfo" name = "newPageSelectedPageId" value = "{{selectedPage}}">
-<input name = "newPageName" type="text" value="enter new page name">
+<input name = "newPageName" type="text" placeHolder = "Enter new Page Name" required pattern = "[a-z0-9.]+">
 <input type="submit" value = "Create new Page">
 </form>
 
@@ -36,6 +36,8 @@
 </select>
 <input type = "submit" value = "load selected version">
 </form>
+
+<p id = "debugText">{{error}}</p>
 
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
@@ -80,6 +82,8 @@ $("document").ready(function(){
 	
 	$("#inputField").html(defaultDisplayedText);
 	
+	
+	
 	$("#root").click(function(){
 		$("#newPageForm").attr("data-selectedPageId", "0");
 		$("#textAreaForm").attr("data-selectedPageId", "0");
@@ -92,7 +96,7 @@ $("document").ready(function(){
 		});
 	});
 	
-
+	
 	
 	{{#each pages}}
 	
