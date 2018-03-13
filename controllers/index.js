@@ -286,7 +286,9 @@ controller.post('/login/take', validate(require('../validators/login.js')), func
 	});
 })
 
-
+controller.get('/version', function(req, res, next) {
+	
+})
 
 
 /*

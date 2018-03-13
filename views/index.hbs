@@ -18,13 +18,13 @@
 <input type="submit" value = "Create new Page">
 </form>
 
-<form id = "textAreaForm" action="/" method = "post" data-selectedPageId = "0">
+<form id = "textAreaForm" action="/" method = "post">
 <input class = "hidden selectedPageInfo" name = "textAreaSelectedPageId" value = "{{selectedPage}}">
 	<input type = "submit" value = "Save">
 	<textarea style = "white-space: pre-wrap" name = "inputField" id = "inputField" rows = "20" cols = "100">{{placeHoldText}}</textarea>
 </form>
 
-<form id = "versionSelectionForm" action = "/" method = "post" data-selectedPageId = "0">
+<div id = "versionSelectionForm">
 <input class = "hidden selectedPageInfo" name = "versionSelectionSelectedPageId" value = "{{selectedPage}}">
 
 <select name="versionSelection" id = "versionSelection">
@@ -34,8 +34,7 @@
 	{{/each}}
 	
 </select>
-<input type = "submit" value = "load selected version">
-</form>
+</div>
 
 <p id = "debugText">{{error}}</p>
 
@@ -47,6 +46,7 @@
 
 
 var defaultDisplayedText = "{{placeHoldText}}";
+var selectedPage = {{selectedPage}};
 var pagesTitlesArray = [];
 var pagesPathArray = [];
 var pagesDataArray = [];
@@ -75,35 +75,43 @@ console.log(versionsArray);
 
 $("document").ready(function(){
 
-	
+	if(selectedPage===0) {
+		$("#versionSelection").addClass("hidden");
+	}
+
+	//this code is responsible for requesting a particular version of a page and displays the response in the textarea
+	$("#versionSelection").change(function() {
+	let selectedVersion = $("#versionSelection").val();
+	console.log("requesting version: " + selectedVersion);
+		$.getJSON("/db/retrieve", {selectedPageId: selectedPage, requestedVersion: selectedVersion}, function(data) {
+			$("#inputField").html(data.journalText);
+		});
+	});
 	
 	//set default values based on selected page
 	$("#pageSelectionMessage").html("Current Page : " + "{{selectedPagePath}}" + "<br>Current Note : {{placeHoldText}}");
 	
 	$("#inputField").html(defaultDisplayedText);
 	
-	
-	
+	//these functions are responsible for displaying the appropriate information when the user clicks on a given page
+	//It is also responsible for changing the hidden inputfields so that the server will know what the selcetedPage is
 	$("#root").click(function(){
-		$("#newPageForm").attr("data-selectedPageId", "0");
-		$("#textAreaForm").attr("data-selectedPageId", "0");
-		$("#versionSelectionForm").attr("data-selectedPageId", "0");
 		
 		$("#pageSelectionMessage").html("Current Page : Root<br>CurrentNote : " + "root note");
+		
+		$("#inputField").html("root note");
 		
 		$(".selectedPageInfo").each(function(){
 			$(this).attr("value", "0");
 		});
+		selectedPage = 0;
+		
+		$("#versionSelection").addClass("hidden");
 	});
-	
-	
 	
 	{{#each pages}}
 	
 	$("#pageLabel{{this.id}}").click(function(){
-		$("#newPageForm").attr("data-selectedPageId", "{{this.id}}");
-		$("#textAreaForm").attr("data-selectedPageId", "{{this.id}}");
-		$("#versionSelectionForm").attr("data-selectedPageId", "{{this.id}}");
 		
 		$("#pageSelectionMessage").html("Current Page : " + "{{this.path}}<br> CurrentNote : " + "{{this.data}}");
 		$("#inputField").html("{{this.data}}");
@@ -111,6 +119,7 @@ $("document").ready(function(){
 		$(".selectedPageInfo").each(function(){
 			$(this).attr("value", "{{this.id}}");
 		});
+		selectedPage = {{this.id}};
 		
 		let htmlString = "";
 		let i = 0;
@@ -120,14 +129,13 @@ $("document").ready(function(){
 		console.log("i = " + i);
 		
 		{{#each this.versions}}
-			//console.log("{{@index}} {{this.versions}}");
 			j = {{@index}} {{this.versions}};
-			console.log("j = " + j);
-			//console.log("i = " + i);
 			htmlString += '<option value = "' + j + '">' + versionsArray[i][j] + '</option>';
 		{{/each}}
 
 		$("#versionSelection").html(htmlString);
+		
+		$("#versionSelection").removeClass("hidden");
 	});
 	
 

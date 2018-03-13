@@ -6,6 +6,15 @@ controller.all('/', function(req, res, next) {
 	res.send('our blocks')
 })
 
+//This controller is responsible for returning the appropriate version to the client when requested
+controller.get('/retrieve', function(req, res, next) {
+	let responseString = "Default Response String";
+	let rows = req.db.run("SELECT * FROM blocks WHERE pageId = " + req.query.selectedPageId + " ORDER BY created DESC");
+	responseString = rows[req.query.requestedVersion].data;
+	console.log("version " + req.query.requestedVersion + " from PageId " + req.query.selectedPageId + " has been requested from server");
+	res.json({journalText : responseString});
+})
+
 controller.all('/create', function(req, res, next) {
 /*
 
@@ -13,18 +22,18 @@ CTRL+S = save
 
 ~~ Versioning ~~
 
-Always insert a new block.
-Versioning is based on created date
-Dropdown with every version shown, so you can select which version you are viewing.
-We should test that new block.data is diffrent from last most recent block.data
+Always insert a new block *COMPLETE*
+Versioning is based on created date *COMPLETE*
+Drop-down with every version shown, so you can select which version you are viewing. *COMPLETE*
+We should test that new block.data is different from last most recent block.data *FUNCTIONAL, but could use client side implementation for improved experience*
 
 
 ~~ Pages ~~
 
-pages table should map out a tree
-parent is the parent page id, 0 is root
-name is that page name, only 0-9a-z.
-path is absolute path from / including page name
+pages table should map out a tree *Functional but could be improved via the implementation of showing and hiding of directories*
+parent is the parent page id, 0 is root *COMPLETE*
+name is that page name, only 0-9a-z. *COMPLETE*
+path is absolute path from / including page name *COMPLETE*
 
 /budget.foobar/home
 
