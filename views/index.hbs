@@ -1,6 +1,7 @@
 <h1>{{title}}</h1>
 <p>Welcome to {{title}}</p>
 
+<!--This is the list of pages that have been ordered into a tree structure-->
 <div id ="pagesList">
 <ul>
 	<li class = "pageListItem noSelect" name = "root" id = "root" data-pageId = "0">Root</li>
@@ -10,20 +11,26 @@
 </ul>
 </div>
 
+<!--This element displays a message that informs the user which page directory is currently selected-->
 <p id="pageSelectionMessage">default message</p>
 
-<form id= "newPageForm" action="/" method = "post">
+<!--This form is responsible for gathering text input from the user in order to add a new page to the database accepts[a-z0-9.]-->
+<!--Currently the newPageName is checked by the server to see if it already exists, would be good to change this to client side-->
+<form id= "newPageForm" name = "newPageForm" action="/" method = "post">
 <input class = "hidden selectedPageInfo" name = "newPageSelectedPageId" value = "{{selectedPage}}">
-<input name = "newPageName" type="text" placeHolder = "Enter new Page Name" required pattern = "[a-z0-9.]+">
-<input type="submit" value = "Create new Page">
+<input name = "newPageName" id="newPageName" type="text" placeHolder = "Enter new Page Name" required pattern = "[a-z0-9.]+">
+<input type="button" value = "Create new Page" onclick="return checkNewPageName()">
 </form>
 
-<form id = "textAreaForm" action="/" method = "post">
+<!--This form is responsible for displaying the current journal entry for the selected page/version. It can also be edited by the user to make a new entry-->
+<!--Currently the inputField is checked by the server to see if it is different from the most recent version-->
+<form id = "textAreaForm" name = "textAreaForm" action="/" method = "post">
 <input class = "hidden selectedPageInfo" name = "textAreaSelectedPageId" value = "{{selectedPage}}">
-	<input type = "submit" value = "Save">
+	<input type = "button" value = "Save" onclick="return checkJournalText()">
 	<textarea style = "white-space: pre-wrap" name = "inputField" id = "inputField" rows = "20" cols = "100">{{placeHoldText}}</textarea>
 </form>
 
+<!--This is a drop down menu that is populated with the times of the previous versions and can be used to populate the textArea with the previous versions entry-->
 <div id = "versionSelectionForm">
 <input class = "hidden selectedPageInfo" name = "versionSelectionSelectedPageId" value = "{{selectedPage}}">
 
@@ -41,12 +48,11 @@
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
 
-
 <script>
-
 
 var defaultDisplayedText = "{{placeHoldText}}";
 var selectedPage = {{selectedPage}};
+var currentPagePath = "";
 var pagesTitlesArray = [];
 var pagesPathArray = [];
 var pagesDataArray = [];
@@ -72,6 +78,53 @@ defaultDisplayedText = defaultDisplayedText.replace(re, "<br>");
 {{/each}}
 
 console.log(versionsArray);
+
+//This function is called when the user attempts to save a new journal entry the entry is checked against the latest version for differences
+function checkJournalText() {
+	let userInput = $("#inputField").val();
+	let messageString = $("#pageSelectionMessage").html();
+	console.log("messageString: " + messageString);
+
+	if(selectedPage==0) {
+		messageString += "<br>Error: Can only make new pages on root";
+		$("#pageSelectionMessage").html(messageString);
+		return false;
+	}
+	else if (userInput===journalText) {
+		messageString += "<br>Error: Latest version is identical";
+		$("#pageSelectionMessage").html(messageString);
+		return false;		
+	}
+	else {
+		document.textAreaForm.submit();
+	}
+}
+
+//
+function checkNewPageName() {
+	let userInput = $("#newPageName").val();
+	let messageString = $("#pageSelectionMessage").html();
+	let errorCondition = false;
+	let requestedPagePath = currentPagePath + "/" + userInput;
+	
+	console.log("RequestedPagePath: " + requestedPagePath);
+	
+	for(let i = 0; i<pagesPathArray.length ; i++) {
+		if(pagesPathArray[i]===requestedPagePath) {
+		console.log("Error match with " + pagesPathArray[i]);
+		errorCondition = true;
+		}
+	}
+	
+	if(errorCondition) {
+		console.log("error");
+		return false
+	}
+	else {
+		document.newPageForm.submit();
+	}
+	
+}
 
 $("document").ready(function(){
 
@@ -105,7 +158,7 @@ $("document").ready(function(){
 			$(this).attr("value", "0");
 		});
 		selectedPage = 0;
-		
+		currentPagePath = "/";
 		$("#versionSelection").addClass("hidden");
 	});
 	
@@ -115,11 +168,12 @@ $("document").ready(function(){
 		
 		$("#pageSelectionMessage").html("Current Page : " + "{{this.path}}<br> CurrentNote : " + "{{this.data}}");
 		$("#inputField").html("{{this.data}}");
-		
+		journalText = "{{this.data}}";
 		$(".selectedPageInfo").each(function(){
 			$(this).attr("value", "{{this.id}}");
 		});
 		selectedPage = {{this.id}};
+		currentPagePath = "{{this.path}}";
 		
 		let htmlString = "";
 		let i = 0;
@@ -142,6 +196,7 @@ $("document").ready(function(){
 	
 	{{/each}}
 });
+
 
 
 </script>

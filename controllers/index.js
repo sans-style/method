@@ -257,6 +257,7 @@ controller.all('/', function(req, res, next) {
 
 	
 	console.log("orderedpageslength: " + orderedPages.length);
+	console.log(orderedPages[0].path);
 	//console.log(orderedPages[0]);
 	
 	res.render('index', {
