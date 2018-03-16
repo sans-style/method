@@ -53,6 +53,7 @@
 var defaultDisplayedText = "{{placeHoldText}}";
 var selectedPage = {{selectedPage}};
 var currentPagePath = "";
+var messageString = "";
 var pagesTitlesArray = [];
 var pagesPathArray = [];
 var pagesDataArray = [];
@@ -82,17 +83,17 @@ console.log(versionsArray);
 //This function is called when the user attempts to save a new journal entry the entry is checked against the latest version for differences
 function checkJournalText() {
 	let userInput = $("#inputField").val();
-	let messageString = $("#pageSelectionMessage").html();
-	console.log("messageString: " + messageString);
+	let errorString = "";
+
 
 	if(selectedPage==0) {
-		messageString += "<br>Error: Can only make new pages on root";
-		$("#pageSelectionMessage").html(messageString);
+		errorString = messageString + "<br>Error: Can only make new pages on root!";
+		$("#pageSelectionMessage").html(errorString);
 		return false;
 	}
 	else if (userInput===journalText) {
-		messageString += "<br>Error: Latest version is identical";
-		$("#pageSelectionMessage").html(messageString);
+		errorString = messageString + "<br>Error: Latest version is identical!";
+		$("#pageSelectionMessage").html(errorString);
 		return false;		
 	}
 	else {
@@ -103,7 +104,7 @@ function checkJournalText() {
 //This method is called when the create new page button is clicked, the input is validated by the function
 function checkNewPageName() {
 	let userInput = $("#newPageName").val();
-	let messageString = $("#pageSelectionMessage").html();
+
 	let errorCondition = false;
 	let errorMessage = "default error message";
 	let requestedPagePath = currentPagePath + "/" + userInput;
@@ -113,7 +114,13 @@ function checkNewPageName() {
 	console.log("userinput: " + userInput);
 	console.log("match result: " + userInput.match(validationRegExp));
 	
-	if(userInput.match(validationRegExp)[0] === userInput){
+	if(userInput.match(validationRegExp) === null) {
+		errorMessage = messageString + "<br>Error: Page name cannot be empty!"
+		console.log("Error: field is empty!");
+		$("#pageSelectionMessage").html(errorMessage);
+		return false;
+	}
+	else if(userInput.match(validationRegExp)[0] === userInput){
 	
 			for(let i = 0; i<pagesPathArray.length ; i++) {
 			if(pagesPathArray[i]===requestedPagePath) {
@@ -161,14 +168,14 @@ $("document").ready(function(){
 	
 	//set default values based on selected page
 	$("#pageSelectionMessage").html("Current Page : " + "{{selectedPagePath}}" + "<br>Current Note : {{placeHoldText}}");
-	
+	messageString = "Current Page : " + "{{selectedPagePath}}" + "<br>Current Note : {{placeHoldText}}";
 	$("#inputField").html(defaultDisplayedText);
 	
 	//these functions are responsible for displaying the appropriate information when the user clicks on a given page
 	//It is also responsible for changing the hidden inputfields so that the server will know what the selcetedPage is
 	$("#root").click(function(){
-		
-		$("#pageSelectionMessage").html("Current Page : Root<br>CurrentNote : " + "root note");
+		messageString  = "Current Page : Root<br>CurrentNote : " + "root note"
+		$("#pageSelectionMessage").html(messageString);
 		
 		$("#inputField").html("root note");
 		
@@ -183,8 +190,8 @@ $("document").ready(function(){
 	{{#each pages}}
 	
 	$("#pageLabel{{this.id}}").click(function(){
-		
-		$("#pageSelectionMessage").html("Current Page : " + "{{this.path}}<br> CurrentNote : " + "{{this.data}}");
+		messageString = "Current Page : " + "{{this.path}}<br> CurrentNote : " + "{{this.data}}";
+		$("#pageSelectionMessage").html(messageString);
 		$("#inputField").html("{{this.data}}");
 		journalText = "{{this.data}}";
 		$(".selectedPageInfo").each(function(){
